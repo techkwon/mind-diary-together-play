@@ -3,7 +3,7 @@ import React, { createContext, useContext, useReducer, ReactNode } from 'react';
 export interface Player {
   id: string;
   name: string;
-  color: 'red' | 'blue' | 'green' | 'yellow';
+  color: 'red' | 'blue' | 'green' | 'yellow' | 'purple' | 'orange';
   position: number;
 }
 

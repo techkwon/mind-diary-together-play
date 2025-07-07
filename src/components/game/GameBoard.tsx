@@ -11,18 +11,35 @@ interface GameBoardProps {
   onBackToMenu: () => void;
 }
 
-const BOARD_SIZE = 20; // 총 칸 수 (다이나믹 사다리 게임 형태)
-const LADDER_STEPS = [
-  [0],                    // 시작점
-  [1, 2, 3],             // 1단계 (3갈래)
-  [4, 5],                // 2단계 (2갈래)  
-  [6, 7, 8, 9],          // 3단계 (4갈래)
-  [10, 11],              // 4단계 (2갈래)
-  [12, 13, 14],          // 5단계 (3갈래)
-  [15, 16],              // 6단계 (2갈래)
-  [17, 18],              // 7단계 (2갈래)
-  [19],                  // 최종 단계 (골인)
-];
+const BOARD_SIZE = 100; // 총 칸 수 (뱀과 사다리 게임)
+
+// 사다리 위치 (출발칸 -> 도착칸)
+const LADDERS = {
+  1: 38,
+  4: 14,
+  9: 31,
+  16: 33,
+  21: 42,
+  28: 84,
+  36: 44,
+  51: 67,
+  71: 91,
+  80: 100
+};
+
+// 뱀 위치 (출발칸 -> 도착칸)
+const SNAKES = {
+  98: 78,
+  95: 75,
+  93: 73,
+  87: 24,
+  64: 60,
+  62: 19,
+  56: 53,
+  49: 11,
+  47: 26,
+  16: 6
+};
 
 const GameBoard = ({ onBackToMenu }: GameBoardProps) => {
   const { state, dispatch, getCurrentPlayer } = useGame();
@@ -41,7 +58,7 @@ const GameBoard = ({ onBackToMenu }: GameBoardProps) => {
     // 플레이어 이동
     setTimeout(() => {
       dispatch({ type: 'SET_MOVING', isMoving: true });
-      const newPosition = Math.min(currentPlayer.position + diceValue, BOARD_SIZE - 1);
+      const newPosition = Math.min(currentPlayer.position + diceValue, BOARD_SIZE);
       
       dispatch({ type: 'MOVE_PLAYER', playerId: currentPlayer.id, newPosition });
       
@@ -50,17 +67,27 @@ const GameBoard = ({ onBackToMenu }: GameBoardProps) => {
         dispatch({ type: 'SET_MOVING', isMoving: false });
         
         // 승리 조건 체크
-        if (newPosition >= BOARD_SIZE - 1) {
+        if (newPosition >= BOARD_SIZE) {
           dispatch({ type: 'END_GAME', winner: currentPlayer });
           setShowConfetti(true);
           return;
         }
+
+        // 뱀이나 사다리 체크
+        let finalPosition = newPosition;
+        if (LADDERS[newPosition as keyof typeof LADDERS]) {
+          finalPosition = LADDERS[newPosition as keyof typeof LADDERS];
+          dispatch({ type: 'MOVE_PLAYER', playerId: currentPlayer.id, newPosition: finalPosition });
+        } else if (SNAKES[newPosition as keyof typeof SNAKES]) {
+          finalPosition = SNAKES[newPosition as keyof typeof SNAKES];
+          dispatch({ type: 'MOVE_PLAYER', playerId: currentPlayer.id, newPosition: finalPosition });
+        }
         
         // 질문 선택
         const questionPool = questions.filter(q => {
-          const specialPositions = getSpecialPositions();
-          if (specialPositions.praise.includes(newPosition)) return q.category === 'praise';
-          if (specialPositions.heart.includes(newPosition)) return q.category === 'heart';
+          const positionType = getPositionType(finalPosition);
+          if (positionType === 'ladder') return q.category === 'praise';
+          if (positionType === 'snake') return q.category === 'heart';
           return q.category === 'normal';
         });
         
@@ -74,159 +101,125 @@ const GameBoard = ({ onBackToMenu }: GameBoardProps) => {
     dispatch({ type: 'NEXT_TURN' });
   };
 
+  // 숫자 위치를 행/열로 변환 (지그재그 패턴)
+  const getRowCol = (num: number) => {
+    const row = Math.floor((num - 1) / 10);
+    const col = row % 2 === 0 ? (num - 1) % 10 : 9 - ((num - 1) % 10);
+    return { row: 9 - row, col }; // 위에서부터 시작하도록 row 반전
+  };
+
   const getSpecialPositions = () => {
     return {
-      praise: [3, 7, 11, 15], // 관계 기술 칸
-      heart: [5, 9, 13, 17],  // 의사결정 칸
+      praise: Object.keys(LADDERS).map(Number), // 사다리 시작점들
+      heart: Object.keys(SNAKES).map(Number),   // 뱀 시작점들
     };
   };
 
   const getPositionType = (position: number) => {
-    const special = getSpecialPositions();
-    if (special.praise.includes(position)) return 'praise';
-    if (special.heart.includes(position)) return 'heart';
-    if (position === BOARD_SIZE - 1) return 'finish';
+    if (position === 100) return 'finish';
+    if (LADDERS[position as keyof typeof LADDERS]) return 'ladder';
+    if (SNAKES[position as keyof typeof SNAKES]) return 'snake';
     return 'normal';
   };
 
   const getPositionIcon = (position: number) => {
     const type = getPositionType(position);
     switch (type) {
-      case 'praise':
-        return <Star className="w-5 h-5 text-praise animate-pulse" />;
-      case 'heart':
-        return <Heart className="w-5 h-5 text-heart animate-pulse" />;
+      case 'ladder':
+        return <Star className="w-3 h-3 text-green-500 animate-pulse" />;
+      case 'snake':
+        return <Heart className="w-3 h-3 text-red-500 animate-pulse" />;
       case 'finish':
-        return <Trophy className="w-5 h-5 text-primary animate-bounce" />;
+        return <Trophy className="w-3 h-3 text-primary animate-bounce" />;
       default:
-        return <div className="w-2 h-2 bg-muted-foreground/40 rounded-full" />;
+        return null;
     }
   };
 
   const renderBoard = () => {
     return (
-      <div className="max-w-2xl mx-auto space-y-6 p-8 bg-muted/20 rounded-2xl relative">
-        {/* 배경 장식 */}
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-secondary/5 rounded-2xl" />
-        
-        {LADDER_STEPS.map((step, stepIndex) => (
-          <div key={stepIndex} className="relative space-y-3">
-            {/* 단계 라벨 */}
-            <div className="text-center relative z-10">
-              <span className={`
-                inline-block px-4 py-2 rounded-full text-sm font-bold shadow-md transform transition-all duration-300
-                ${stepIndex === 0 ? 'bg-gradient-warm text-white animate-pulse' : ''}
-                ${stepIndex === LADDER_STEPS.length - 1 ? 'bg-gradient-warm text-white shadow-glow animate-celebration' : ''}
-                ${stepIndex > 0 && stepIndex < LADDER_STEPS.length - 1 ? 'bg-background border-2 border-primary/30 text-foreground hover:scale-105' : ''}
-              `}>
-                {stepIndex === 0 ? '🚀 시작' : 
-                 stepIndex === LADDER_STEPS.length - 1 ? '🏆 골인' : 
-                 `${stepIndex}단계`}
-              </span>
-            </div>
-            
-            {/* 해당 단계의 칸들 */}
-            <div className={`
-              flex justify-center gap-3 relative z-10
-              ${step.length === 1 ? 'justify-center' : 
-                step.length === 2 ? 'justify-center gap-8' :
-                step.length === 3 ? 'justify-center gap-4' :
-                'justify-center gap-2'}
-            `}>
-              {step.map((position, posIndex) => {
-                const playersOnPosition = state.players.filter(p => p.position === position);
-                const positionType = getPositionType(position);
-                
-                return (
-                  <div
-                    key={position}
-                    className={`
-                      relative w-20 h-20 rounded-xl border-3 p-3 flex flex-col items-center justify-center text-xs transition-all duration-500 transform hover:scale-110
-                      ${positionType === 'praise' ? 'bg-gradient-praise border-praise shadow-glow animate-pulse' : ''}
-                      ${positionType === 'heart' ? 'bg-gradient-heart border-heart shadow-glow animate-pulse' : ''}
-                      ${positionType === 'finish' ? 'bg-gradient-warm border-primary shadow-warm animate-bounce' : ''}
-                      ${positionType === 'normal' ? 'bg-card/90 border-border hover:border-primary/50 hover:shadow-md backdrop-blur-sm' : ''}
-                      ${playersOnPosition.length > 0 ? 'ring-4 ring-primary/30' : ''}
-                    `}
-                    style={{
-                      animationDelay: `${posIndex * 0.1}s`
-                    }}
-                  >
-                    <div className="absolute -top-2 -left-2 text-xs font-bold bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center shadow-md">
-                      {position + 1}
-                    </div>
-                    
-                    <div className="mb-1">
-                      {getPositionIcon(position)}
-                    </div>
-                    
-                    {/* 플레이어 말들 */}
-                    <div className="flex flex-wrap gap-1 justify-center">
-                      {playersOnPosition.map((player, playerIndex) => (
-                        <div
-                          key={player.id}
-                          className={`w-4 h-4 rounded-full bg-player-${player.color} shadow-lg border-2 border-white transform transition-all duration-300 ${
-                            state.isMoving && player.id === currentPlayer?.id ? 'animate-piece-move scale-125' : 'hover:scale-110'
-                          }`}
-                          title={player.name}
-                          style={{
-                            animationDelay: `${playerIndex * 0.1}s`
-                          }}
-                        />
-                      ))}
-                    </div>
+      <div className="w-full max-w-lg mx-auto">
+        <div className="bg-muted/20 rounded-2xl p-4 relative overflow-hidden">
+          {/* 배경 장식 */}
+          <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-secondary/5 rounded-2xl" />
+          
+          {/* 10x10 그리드 */}
+          <div className="grid grid-cols-10 gap-1 relative z-10">
+            {Array.from({ length: 100 }, (_, i) => {
+              const position = 100 - i; // 100부터 1까지 역순
+              const { row, col } = getRowCol(position);
+              const playersOnPosition = state.players.filter(p => p.position === position);
+              const positionType = getPositionType(position);
+              
+              return (
+                <div
+                  key={position}
+                  className={`
+                    relative aspect-square rounded-md border flex flex-col items-center justify-center text-xs transition-all duration-300
+                    ${positionType === 'ladder' ? 'bg-green-100 border-green-400 text-green-800' : ''}
+                    ${positionType === 'snake' ? 'bg-red-100 border-red-400 text-red-800' : ''}
+                    ${positionType === 'finish' ? 'bg-primary/20 border-primary text-primary font-bold' : ''}
+                    ${positionType === 'normal' ? 'bg-background border-border' : ''}
+                    ${playersOnPosition.length > 0 ? 'ring-2 ring-primary/50' : ''}
+                  `}
+                >
+                  {/* 칸 번호 */}
+                  <div className="absolute top-0.5 left-0.5 text-xs font-bold opacity-70">
+                    {position}
                   </div>
-                );
-              })}
-            </div>
-            
-            {/* 다이나믹 연결선 (사다리 효과) */}
-            {stepIndex < LADDER_STEPS.length - 1 && (
-              <div className="flex justify-center relative">
-                <div className="relative">
-                  {/* 메인 연결선 */}
-                  <div className="w-1 h-8 bg-gradient-to-b from-primary/60 to-primary/30 rounded-full mx-auto shadow-sm" />
                   
-                  {/* 사다리 가로선들 */}
-                  {step.length > 1 && (
-                    <div className="absolute top-4 left-1/2 transform -translate-x-1/2">
-                      <div className="flex space-x-2">
-                        {Array.from({ length: step.length - 1 }, (_, i) => (
-                          <div 
-                            key={i} 
-                            className="w-6 h-0.5 bg-primary/40 rounded-full animate-pulse"
-                            style={{ animationDelay: `${i * 0.2}s` }}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                  {/* 특수 아이콘 */}
+                  <div className="mb-1">
+                    {getPositionIcon(position)}
+                  </div>
                   
-                  {/* 분기 연결선들 */}
-                  {LADDER_STEPS[stepIndex + 1] && LADDER_STEPS[stepIndex + 1].length > 1 && (
-                    <div className="absolute top-6 left-1/2 transform -translate-x-1/2">
-                      <div className={`flex ${LADDER_STEPS[stepIndex + 1].length === 2 ? 'gap-16' : 
-                                             LADDER_STEPS[stepIndex + 1].length === 3 ? 'gap-8' : 'gap-4'}`}>
-                        {LADDER_STEPS[stepIndex + 1].map((_, branchIndex) => (
-                          <div 
-                            key={branchIndex}
-                            className="w-0.5 h-4 bg-gradient-to-b from-primary/30 to-transparent rounded-full animate-pulse"
-                            style={{ animationDelay: `${branchIndex * 0.15}s` }}
-                          />
-                        ))}
-                      </div>
+                  {/* 플레이어 말들 */}
+                  <div className="flex flex-wrap gap-0.5 justify-center">
+                    {playersOnPosition.map((player, playerIndex) => (
+                      <div
+                        key={player.id}
+                        className={`w-2.5 h-2.5 rounded-full bg-player-${player.color} shadow-sm border border-white transform transition-all duration-300 ${
+                          state.isMoving && player.id === currentPlayer?.id ? 'animate-bounce scale-110' : ''
+                        }`}
+                        title={player.name}
+                      />
+                    ))}
+                  </div>
+                  
+                  {/* 사다리/뱀 표시 화살표 */}
+                  {(LADDERS[position as keyof typeof LADDERS] || SNAKES[position as keyof typeof SNAKES]) && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      {LADDERS[position as keyof typeof LADDERS] && (
+                        <div className="text-green-600 text-lg font-bold">↗</div>
+                      )}
+                      {SNAKES[position as keyof typeof SNAKES] && (
+                        <div className="text-red-600 text-lg font-bold">↙</div>
+                      )}
                     </div>
                   )}
                 </div>
-              </div>
-            )}
+              );
+            })}
           </div>
-        ))}
+          
+          {/* 장식 요소들 */}
+          <div className="absolute top-4 right-4 w-6 h-6 bg-primary/10 rounded-full animate-pulse" />
+          <div className="absolute bottom-4 left-4 w-4 h-4 bg-secondary/10 rounded-full animate-pulse" style={{ animationDelay: '1s' }} />
+        </div>
         
-        {/* 배경 장식 원들 */}
-        <div className="absolute top-4 right-4 w-8 h-8 bg-primary/10 rounded-full animate-ping" />
-        <div className="absolute bottom-4 left-4 w-6 h-6 bg-secondary/10 rounded-full animate-ping" style={{ animationDelay: '1s' }} />
-        <div className="absolute top-1/2 right-8 w-4 h-4 bg-accent/10 rounded-full animate-ping" style={{ animationDelay: '2s' }} />
+        {/* 게임 설명 */}
+        <div className="mt-4 text-center text-sm text-muted-foreground">
+          <div className="flex justify-center items-center gap-4">
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 bg-green-400 rounded"></div>
+              <span>사다리 (↗)</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 bg-red-400 rounded"></div>
+              <span>뱀 (↙)</span>
+            </div>
+          </div>
+        </div>
       </div>
     );
   };

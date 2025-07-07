@@ -12,12 +12,14 @@ interface PlayerSetupProps {
   onBack: () => void;
 }
 
-const PLAYER_COLORS = [
-  { value: 'red' as const, label: '빨강', class: 'bg-player-red' },
-  { value: 'blue' as const, label: '파랑', class: 'bg-player-blue' },
-  { value: 'green' as const, label: '초록', class: 'bg-player-green' },
-  { value: 'yellow' as const, label: '노랑', class: 'bg-player-yellow' },
-];
+  const PLAYER_COLORS = [
+    { value: 'red' as const, label: '빨강', class: 'bg-player-red' },
+    { value: 'blue' as const, label: '파랑', class: 'bg-player-blue' },
+    { value: 'green' as const, label: '초록', class: 'bg-player-green' },
+    { value: 'yellow' as const, label: '노랑', class: 'bg-player-yellow' },
+    { value: 'purple' as const, label: '보라', class: 'bg-player-purple' },
+    { value: 'orange' as const, label: '주황', class: 'bg-player-orange' },
+  ];
 
 const PlayerSetup = ({ onComplete, onBack }: PlayerSetupProps) => {
   const { dispatch } = useGame();
@@ -101,7 +103,7 @@ const PlayerSetup = ({ onComplete, onBack }: PlayerSetupProps) => {
             <div className="space-y-2">
               <Label className="text-base font-semibold">플레이어 수</Label>
               <div className="flex space-x-2">
-                {[2, 3, 4].map((count) => (
+                {[2, 3, 4, 5, 6].map((count) => (
                   <Button
                     key={count}
                     variant={playerCount === count ? "default" : "outline"}

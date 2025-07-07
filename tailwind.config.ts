@@ -67,7 +67,9 @@ export default {
 					red: 'hsl(var(--player-red))',
 					blue: 'hsl(var(--player-blue))',
 					green: 'hsl(var(--player-green))',
-					yellow: 'hsl(var(--player-yellow))'
+					yellow: 'hsl(var(--player-yellow))',
+					purple: 'hsl(var(--player-purple))',
+					orange: 'hsl(var(--player-orange))'
 				},
 				heart: {
 					DEFAULT: 'hsl(var(--heart))',
