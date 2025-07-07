@@ -19,6 +19,8 @@ export interface GameState {
   gamePhase: 'setup' | 'playing' | 'ended';
   winner: Player | null;
   lastDiceRoll: number | null;
+  diceRolls: [number, number] | null; // 두 개의 주사위
+  isDouble: boolean; // 더블 여부
   currentQuestion: Question | null;
   isMoving: boolean;
   previousPosition: number | null; // 실패시 돌아갈 위치
@@ -27,7 +29,7 @@ export interface GameState {
 type GameAction = 
   | { type: 'SET_PLAYERS'; players: Player[] }
   | { type: 'START_GAME' }
-  | { type: 'ROLL_DICE'; value: number }
+  | { type: 'ROLL_DICE'; diceRolls: [number, number]; isDouble: boolean }
   | { type: 'MOVE_PLAYER'; playerId: string; newPosition: number }
   | { type: 'SET_QUESTION'; question: Question }
   | { type: 'SET_PREVIOUS_POSITION'; playerId: string; position: number }
@@ -44,6 +46,8 @@ const initialState: GameState = {
   gamePhase: 'setup',
   winner: null,
   lastDiceRoll: null,
+  diceRolls: null,
+  isDouble: false,
   currentQuestion: null,
   isMoving: false,
   previousPosition: null,
@@ -58,7 +62,12 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return { ...state, gamePhase: 'playing' };
     
     case 'ROLL_DICE':
-      return { ...state, lastDiceRoll: action.value };
+      return { 
+        ...state, 
+        diceRolls: action.diceRolls,
+        isDouble: action.isDouble,
+        lastDiceRoll: action.diceRolls[0] + action.diceRolls[1]
+      };
     
     case 'MOVE_PLAYER':
       return {
@@ -98,8 +107,12 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case 'NEXT_TURN':
       return {
         ...state,
-        currentPlayerIndex: (state.currentPlayerIndex + 1) % state.players.length,
+        currentPlayerIndex: state.isDouble 
+          ? state.currentPlayerIndex // 더블이면 같은 플레이어 유지
+          : (state.currentPlayerIndex + 1) % state.players.length,
         lastDiceRoll: null,
+        diceRolls: null,
+        isDouble: false,
         currentQuestion: null,
         previousPosition: null,
       };

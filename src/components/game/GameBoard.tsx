@@ -50,8 +50,13 @@ const GameBoard = ({ onBackToMenu }: GameBoardProps) => {
   const rollDice = () => {
     if (state.isMoving || !currentPlayer) return;
     
-    const diceValue = Math.floor(Math.random() * 6) + 1;
-    dispatch({ type: 'ROLL_DICE', value: diceValue });
+    // 주사위 2개 굴리기
+    const dice1 = Math.floor(Math.random() * 6) + 1;
+    const dice2 = Math.floor(Math.random() * 6) + 1;
+    const isDouble = dice1 === dice2;
+    const totalMove = dice1 + dice2;
+    
+    dispatch({ type: 'ROLL_DICE', diceRolls: [dice1, dice2], isDouble });
     
     // 이전 위치 저장 (미션 실패시 되돌아갈 위치)
     dispatch({ type: 'SET_PREVIOUS_POSITION', playerId: currentPlayer.id, position: currentPlayer.position });
@@ -59,7 +64,7 @@ const GameBoard = ({ onBackToMenu }: GameBoardProps) => {
     // 플레이어 이동
     setTimeout(() => {
       dispatch({ type: 'SET_MOVING', isMoving: true });
-      const newPosition = Math.min(currentPlayer.position + diceValue, BOARD_SIZE);
+      const newPosition = Math.min(currentPlayer.position + totalMove, BOARD_SIZE);
       
       dispatch({ type: 'MOVE_PLAYER', playerId: currentPlayer.id, newPosition });
       
@@ -99,6 +104,11 @@ const GameBoard = ({ onBackToMenu }: GameBoardProps) => {
   };
 
   const nextTurn = () => {
+    // 더블이면 같은 플레이어가 다시
+    if (state.isDouble) {
+      dispatch({ type: 'NEXT_TURN' }); // 상태 리셋만
+      return;
+    } 
     dispatch({ type: 'NEXT_TURN' });
   };
 
@@ -201,12 +211,12 @@ const GameBoard = ({ onBackToMenu }: GameBoardProps) => {
                   
                   {/* 사다리/뱀 표시 화살표 */}
                   {(LADDERS[position as keyof typeof LADDERS] || SNAKES[position as keyof typeof SNAKES]) && (
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
                       {LADDERS[position as keyof typeof LADDERS] && (
-                        <div className="text-green-600 text-lg font-bold">↗</div>
+                        <div className="text-4xl font-bold text-green-600 animate-bounce drop-shadow-lg">↗</div>
                       )}
                       {SNAKES[position as keyof typeof SNAKES] && (
-                        <div className="text-red-600 text-lg font-bold">↙</div>
+                        <div className="text-4xl font-bold text-red-600 animate-bounce drop-shadow-lg">↙</div>
                       )}
                     </div>
                   )}
@@ -289,13 +299,20 @@ const GameBoard = ({ onBackToMenu }: GameBoardProps) => {
             <CardContent className="py-4">
               <div className="text-center">
                 <div className="flex items-center justify-center space-x-3 mb-2">
-                  <div className={`w-6 h-6 rounded-full bg-player-${currentPlayer.color}`} />
+                  <div className={`w-6 h-6 rounded-full bg-player-${currentPlayer.color} flex items-center justify-center text-sm`}>
+                    {getPlayerEmoji(currentPlayer.color)}
+                  </div>
                   <h2 className="text-xl font-semibold text-foreground">
                     {currentPlayer.name}님 차례입니다
                   </h2>
+                  {state.isDouble && (
+                    <div className="text-lg text-green-600 font-bold animate-pulse">
+                      🎲 더블!
+                    </div>
+                  )}
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  주사위를 굴려 앞으로 나아가세요
+                  {state.isDouble ? "더블! 주사위를 다시 굴려주세요" : "주사위를 굴려 앞으로 나아가세요"}
                 </p>
               </div>
             </CardContent>
@@ -317,7 +334,8 @@ const GameBoard = ({ onBackToMenu }: GameBoardProps) => {
           <Dice 
             onRoll={rollDice} 
             disabled={state.isMoving || !currentPlayer || !!state.currentQuestion}
-            lastRoll={state.lastDiceRoll}
+            diceRolls={state.diceRolls}
+            isDouble={state.isDouble}
           />
         </div>
 

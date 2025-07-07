@@ -6,10 +6,11 @@ import { Dice6 } from "lucide-react";
 interface DiceProps {
   onRoll: () => void;
   disabled: boolean;
-  lastRoll: number | null;
+  diceRolls: [number, number] | null;
+  isDouble: boolean;
 }
 
-const Dice = ({ onRoll, disabled, lastRoll }: DiceProps) => {
+const Dice = ({ onRoll, disabled, diceRolls, isDouble }: DiceProps) => {
   const [isRolling, setIsRolling] = useState(false);
 
   const handleRoll = () => {
@@ -39,43 +40,60 @@ const Dice = ({ onRoll, disabled, lastRoll }: DiceProps) => {
   return (
     <Card className="shadow-warm bg-card/90 backdrop-blur-sm">
       <CardContent className="p-6 text-center space-y-4">
-        {/* 주사위 표시 */}
-        <div className="flex justify-center">
-          <div 
-            className={`
-              w-20 h-20 bg-primary rounded-lg shadow-lg border-2 border-primary-foreground 
-              flex items-center justify-center transition-all duration-300
-              ${isRolling ? 'animate-dice-roll' : 'hover:scale-110'}
-            `}
-          >
-            {lastRoll ? (
-              <div className="grid grid-cols-3 gap-1 p-2">
-                {getDotPattern(lastRoll).map((row, rowIndex) =>
-                  row.map((dot, colIndex) => (
-                    <div
-                      key={`${rowIndex}-${colIndex}`}
-                      className={`
-                        w-2 h-2 rounded-full 
-                        ${dot ? 'bg-primary-foreground' : 'transparent'}
-                      `}
-                    />
-                  ))
-                )}
+        {/* 주사위 2개 표시 */}
+        <div className="flex justify-center gap-4">
+          {diceRolls ? (
+            // 두 개의 주사위 표시
+            diceRolls.map((diceValue, index) => (
+              <div 
+                key={index}
+                className={`
+                  w-16 h-16 bg-primary rounded-lg shadow-lg border-2 border-primary-foreground 
+                  flex items-center justify-center transition-all duration-300
+                  ${isRolling ? 'animate-dice-roll' : 'hover:scale-110'}
+                `}
+              >
+                <div className="grid grid-cols-3 gap-1 p-2">
+                  {getDotPattern(diceValue).map((row, rowIndex) =>
+                    row.map((dot, colIndex) => (
+                      <div
+                        key={`${rowIndex}-${colIndex}`}
+                        className={`
+                          w-1.5 h-1.5 rounded-full 
+                          ${dot ? 'bg-primary-foreground' : 'transparent'}
+                        `}
+                      />
+                    ))
+                  )}
+                </div>
               </div>
-            ) : (
-              <Dice6 className="w-10 h-10 text-primary-foreground" />
-            )}
-          </div>
+            ))
+          ) : (
+            // 기본 주사위 2개
+            <>
+              <div className={`w-16 h-16 bg-primary rounded-lg shadow-lg border-2 border-primary-foreground flex items-center justify-center transition-all duration-300`}>
+                <Dice6 className="w-8 h-8 text-primary-foreground" />
+              </div>
+              <div className={`w-16 h-16 bg-primary rounded-lg shadow-lg border-2 border-primary-foreground flex items-center justify-center transition-all duration-300`}>
+                <Dice6 className="w-8 h-8 text-primary-foreground" />
+              </div>
+            </>
+          )}
         </div>
 
         {/* 결과 표시 */}
-        {lastRoll && !isRolling && (
+        {diceRolls && !isRolling && (
           <div className="space-y-2 animate-bounce-in">
             <div className="text-3xl font-bold text-primary">
-              {lastRoll}
+              {diceRolls[0]} + {diceRolls[1]} = {diceRolls[0] + diceRolls[1]}
             </div>
+            {isDouble && (
+              <div className="text-lg font-semibold text-green-600 animate-pulse">
+                🎲 더블! 한 번 더! 🎲
+              </div>
+            )}
             <p className="text-sm text-muted-foreground">
-              {lastRoll}칸 앞으로 이동합니다
+              {diceRolls[0] + diceRolls[1]}칸 앞으로 이동합니다
             </p>
           </div>
         )}
@@ -102,7 +120,7 @@ const Dice = ({ onRoll, disabled, lastRoll }: DiceProps) => {
 
         {disabled && !isRolling && (
           <p className="text-xs text-muted-foreground">
-            {lastRoll ? "질문에 답변한 후 다음 차례로 넘어갑니다" : "잠시만 기다려주세요"}
+            {diceRolls ? (isDouble ? "더블! 질문에 답변한 후 다시 주사위를 굴려주세요" : "질문에 답변한 후 다음 차례로 넘어갑니다") : "잠시만 기다려주세요"}
           </p>
         )}
       </CardContent>
