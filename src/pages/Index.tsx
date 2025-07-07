@@ -44,14 +44,14 @@ const Index = () => {
         <div className="space-y-6 animate-bounce-in">
           <div className="flex justify-center items-center space-x-4 mb-6">
             <Heart className="w-12 h-12 text-heart animate-heart-burst" />
-            <h1 className="text-6xl font-bold bg-gradient-warm bg-clip-text text-transparent">
-              마음일기
+            <h1 className="text-5xl font-bold bg-gradient-warm bg-clip-text text-transparent">
+              한국형 사회정서 앱
             </h1>
             <Heart className="w-12 h-12 text-heart animate-heart-burst" />
           </div>
           
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            가족과 친구들이 함께 모여 서로의 마음을 나누는 따뜻한 보드게임
+            사회정서 학습을 통해 감정을 이해하고 관계를 발전시키는 교육용 게임
           </p>
           
           <div className="flex justify-center items-center space-x-6 text-sm text-muted-foreground">
@@ -74,10 +74,10 @@ const Index = () => {
         <Card className="shadow-warm border-0 bg-card/80 backdrop-blur-sm">
           <CardHeader className="space-y-4">
             <CardTitle className="text-2xl text-foreground">
-              새로운 게임을 시작해보세요
+              사회정서 학습 게임을 시작해보세요
             </CardTitle>
             <CardDescription className="text-base">
-              한 화면을 함께 보며 주사위를 굴리고, 질문에 답하며 서로를 더 깊이 알아가는 시간을 가져보세요.
+              감정 인식, 공감 능력, 관계 기술을 기르며 건전한 사회적 상호작용을 학습하는 교육용 게임입니다.
             </CardDescription>
           </CardHeader>
           
@@ -96,9 +96,9 @@ const Index = () => {
                 <div className="w-12 h-12 bg-gradient-warm rounded-full flex items-center justify-center mx-auto">
                   <Users className="w-6 h-6 text-primary-foreground" />
                 </div>
-                <h3 className="font-semibold text-foreground">함께 플레이</h3>
+                <h3 className="font-semibold text-foreground">협력 학습</h3>
                 <p className="text-sm text-muted-foreground">
-                  한 화면을 보며 모두가 함께 참여
+                  함께 참여하며 사회적 기술 향상
                 </p>
               </div>
               
@@ -106,9 +106,9 @@ const Index = () => {
                 <div className="w-12 h-12 bg-gradient-heart rounded-full flex items-center justify-center mx-auto">
                   <Heart className="w-6 h-6 text-white" />
                 </div>
-                <h3 className="font-semibold text-foreground">마음 나누기</h3>
+                <h3 className="font-semibold text-foreground">감정 이해</h3>
                 <p className="text-sm text-muted-foreground">
-                  서로의 감정과 생각을 공유
+                  자신과 타인의 감정을 인식하고 이해
                 </p>
               </div>
               
@@ -116,9 +116,9 @@ const Index = () => {
                 <div className="w-12 h-12 bg-gradient-praise rounded-full flex items-center justify-center mx-auto">
                   <Play className="w-6 h-6 text-white" />
                 </div>
-                <h3 className="font-semibold text-foreground">즐거운 시간</h3>
+                <h3 className="font-semibold text-foreground">관계 기술</h3>
                 <p className="text-sm text-muted-foreground">
-                  웃음과 감동이 있는 소중한 시간
+                  의사소통과 공감 능력 개발
                 </p>
               </div>
             </div>
@@ -127,7 +127,7 @@ const Index = () => {
 
         {/* Footer */}
         <p className="text-sm text-muted-foreground/70">
-          ❤️ 소중한 사람들과 함께하는 마음일기 ❤️
+          🎓 함께 성장하는 사회정서 학습 🎓
         </p>
       </div>
     </div>

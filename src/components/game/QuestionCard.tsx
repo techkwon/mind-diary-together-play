@@ -51,22 +51,22 @@ const QuestionCard = ({ question, onComplete, playerName }: QuestionCardProps) =
   const getCategoryName = () => {
     switch (question.category) {
       case 'heart':
-        return '하트 미션';
+        return '의사결정 미션';
       case 'praise':
-        return '칭찬 미션';
+        return '관계기술 미션';
       default:
-        return '일반 미션';
+        return '자기인식 미션';
     }
   };
 
   const getSpecialMessage = () => {
     switch (question.category) {
       case 'heart':
-        return '❤️ 따뜻한 마음을 나눠보세요 ❤️';
+        return '🤔 책임감 있는 의사결정을 연습해보세요 🤔';
       case 'praise':
-        return '⭐ 서로를 칭찬해주세요 ⭐';
+        return '🤝 관계 기술을 발전시켜보세요 🤝';
       default:
-        return '💭 솔직한 마음을 들려주세요 💭';
+        return '🎯 자기 인식과 감정 관리를 연습해보세요 🎯';
     }
   };
 
@@ -108,7 +108,7 @@ const QuestionCard = ({ question, onComplete, playerName }: QuestionCardProps) =
           {/* 안내 메시지 */}
           <div className="bg-white/90 rounded-lg p-4 text-center">
             <p className="text-foreground font-medium mb-2">
-              📢 미션을 수행해주세요
+              📚 사회정서 학습 미션을 수행해주세요
             </p>
             <p className="text-sm text-muted-foreground">
               미션을 완료하셨으면 <strong>성공</strong>을, 완료하지 못했다면 <strong>실패</strong>를 선택해주세요

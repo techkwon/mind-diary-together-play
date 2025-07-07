@@ -11,13 +11,17 @@ interface GameBoardProps {
   onBackToMenu: () => void;
 }
 
-const BOARD_SIZE = 15; // 총 칸 수 (사다리 게임 형태)
+const BOARD_SIZE = 20; // 총 칸 수 (다이나믹 사다리 게임 형태)
 const LADDER_STEPS = [
-  [0, 1, 2, 3, 4],     // 1단계
-  [5, 6, 7],           // 2단계  
-  [8, 9, 10, 11],      // 3단계
-  [12, 13],            // 4단계
-  [14],                // 최종 단계 (골인)
+  [0],                    // 시작점
+  [1, 2, 3],             // 1단계 (3갈래)
+  [4, 5],                // 2단계 (2갈래)  
+  [6, 7, 8, 9],          // 3단계 (4갈래)
+  [10, 11],              // 4단계 (2갈래)
+  [12, 13, 14],          // 5단계 (3갈래)
+  [15, 16],              // 6단계 (2갈래)
+  [17, 18],              // 7단계 (2갈래)
+  [19],                  // 최종 단계 (골인)
 ];
 
 const GameBoard = ({ onBackToMenu }: GameBoardProps) => {
@@ -72,8 +76,8 @@ const GameBoard = ({ onBackToMenu }: GameBoardProps) => {
 
   const getSpecialPositions = () => {
     return {
-      praise: [2, 6, 10], // 칭찬하기 칸
-      heart: [4, 8, 12],  // 하트 칸
+      praise: [3, 7, 11, 15], // 관계 기술 칸
+      heart: [5, 9, 13, 17],  // 의사결정 칸
     };
   };
 
@@ -89,31 +93,47 @@ const GameBoard = ({ onBackToMenu }: GameBoardProps) => {
     const type = getPositionType(position);
     switch (type) {
       case 'praise':
-        return <Star className="w-4 h-4 text-praise" />;
+        return <Star className="w-5 h-5 text-praise animate-pulse" />;
       case 'heart':
-        return <Heart className="w-4 h-4 text-heart" />;
+        return <Heart className="w-5 h-5 text-heart animate-pulse" />;
       case 'finish':
-        return <Trophy className="w-4 h-4 text-primary" />;
+        return <Trophy className="w-5 h-5 text-primary animate-bounce" />;
       default:
-        return null;
+        return <div className="w-2 h-2 bg-muted-foreground/40 rounded-full" />;
     }
   };
 
   const renderBoard = () => {
     return (
-      <div className="max-w-md mx-auto space-y-4 p-6 bg-muted/30 rounded-lg">
+      <div className="max-w-2xl mx-auto space-y-6 p-8 bg-muted/20 rounded-2xl relative">
+        {/* 배경 장식 */}
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-secondary/5 rounded-2xl" />
+        
         {LADDER_STEPS.map((step, stepIndex) => (
-          <div key={stepIndex} className="space-y-2">
+          <div key={stepIndex} className="relative space-y-3">
             {/* 단계 라벨 */}
-            <div className="text-center">
-              <span className="text-xs font-semibold text-muted-foreground bg-background px-2 py-1 rounded-full">
-                {stepIndex === LADDER_STEPS.length - 1 ? '🏆 골인' : `${stepIndex + 1}단계`}
+            <div className="text-center relative z-10">
+              <span className={`
+                inline-block px-4 py-2 rounded-full text-sm font-bold shadow-md transform transition-all duration-300
+                ${stepIndex === 0 ? 'bg-gradient-warm text-white animate-pulse' : ''}
+                ${stepIndex === LADDER_STEPS.length - 1 ? 'bg-gradient-warm text-white shadow-glow animate-celebration' : ''}
+                ${stepIndex > 0 && stepIndex < LADDER_STEPS.length - 1 ? 'bg-background border-2 border-primary/30 text-foreground hover:scale-105' : ''}
+              `}>
+                {stepIndex === 0 ? '🚀 시작' : 
+                 stepIndex === LADDER_STEPS.length - 1 ? '🏆 골인' : 
+                 `${stepIndex}단계`}
               </span>
             </div>
             
             {/* 해당 단계의 칸들 */}
-            <div className={`flex justify-center gap-2 ${step.length === 1 ? 'justify-center' : ''}`}>
-              {step.map((position) => {
+            <div className={`
+              flex justify-center gap-3 relative z-10
+              ${step.length === 1 ? 'justify-center' : 
+                step.length === 2 ? 'justify-center gap-8' :
+                step.length === 3 ? 'justify-center gap-4' :
+                'justify-center gap-2'}
+            `}>
+              {step.map((position, posIndex) => {
                 const playersOnPosition = state.players.filter(p => p.position === position);
                 const positionType = getPositionType(position);
                 
@@ -121,28 +141,37 @@ const GameBoard = ({ onBackToMenu }: GameBoardProps) => {
                   <div
                     key={position}
                     className={`
-                      relative w-16 h-16 rounded-lg border-2 p-2 flex flex-col items-center justify-center text-xs transition-all
-                      ${positionType === 'praise' ? 'bg-gradient-praise border-praise shadow-glow' : ''}
-                      ${positionType === 'heart' ? 'bg-gradient-heart border-heart shadow-glow' : ''}
-                      ${positionType === 'finish' ? 'bg-gradient-warm border-primary shadow-warm' : ''}
-                      ${positionType === 'normal' ? 'bg-card border-border hover:border-primary/50' : ''}
+                      relative w-20 h-20 rounded-xl border-3 p-3 flex flex-col items-center justify-center text-xs transition-all duration-500 transform hover:scale-110
+                      ${positionType === 'praise' ? 'bg-gradient-praise border-praise shadow-glow animate-pulse' : ''}
+                      ${positionType === 'heart' ? 'bg-gradient-heart border-heart shadow-glow animate-pulse' : ''}
+                      ${positionType === 'finish' ? 'bg-gradient-warm border-primary shadow-warm animate-bounce' : ''}
+                      ${positionType === 'normal' ? 'bg-card/90 border-border hover:border-primary/50 hover:shadow-md backdrop-blur-sm' : ''}
+                      ${playersOnPosition.length > 0 ? 'ring-4 ring-primary/30' : ''}
                     `}
+                    style={{
+                      animationDelay: `${posIndex * 0.1}s`
+                    }}
                   >
-                    <div className="absolute top-1 left-1 text-xs font-mono text-muted-foreground">
+                    <div className="absolute -top-2 -left-2 text-xs font-bold bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center shadow-md">
                       {position + 1}
                     </div>
                     
-                    {getPositionIcon(position)}
+                    <div className="mb-1">
+                      {getPositionIcon(position)}
+                    </div>
                     
                     {/* 플레이어 말들 */}
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {playersOnPosition.map((player) => (
+                    <div className="flex flex-wrap gap-1 justify-center">
+                      {playersOnPosition.map((player, playerIndex) => (
                         <div
                           key={player.id}
-                          className={`w-3 h-3 rounded-full bg-player-${player.color} shadow-sm ${
-                            state.isMoving && player.id === currentPlayer?.id ? 'animate-piece-move' : ''
+                          className={`w-4 h-4 rounded-full bg-player-${player.color} shadow-lg border-2 border-white transform transition-all duration-300 ${
+                            state.isMoving && player.id === currentPlayer?.id ? 'animate-piece-move scale-125' : 'hover:scale-110'
                           }`}
                           title={player.name}
+                          style={{
+                            animationDelay: `${playerIndex * 0.1}s`
+                          }}
                         />
                       ))}
                     </div>
@@ -151,14 +180,53 @@ const GameBoard = ({ onBackToMenu }: GameBoardProps) => {
               })}
             </div>
             
-            {/* 연결선 (사다리 같은 효과) */}
+            {/* 다이나믹 연결선 (사다리 효과) */}
             {stepIndex < LADDER_STEPS.length - 1 && (
-              <div className="flex justify-center">
-                <div className="w-0.5 h-4 bg-muted-foreground/30" />
+              <div className="flex justify-center relative">
+                <div className="relative">
+                  {/* 메인 연결선 */}
+                  <div className="w-1 h-8 bg-gradient-to-b from-primary/60 to-primary/30 rounded-full mx-auto shadow-sm" />
+                  
+                  {/* 사다리 가로선들 */}
+                  {step.length > 1 && (
+                    <div className="absolute top-4 left-1/2 transform -translate-x-1/2">
+                      <div className="flex space-x-2">
+                        {Array.from({ length: step.length - 1 }, (_, i) => (
+                          <div 
+                            key={i} 
+                            className="w-6 h-0.5 bg-primary/40 rounded-full animate-pulse"
+                            style={{ animationDelay: `${i * 0.2}s` }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* 분기 연결선들 */}
+                  {LADDER_STEPS[stepIndex + 1] && LADDER_STEPS[stepIndex + 1].length > 1 && (
+                    <div className="absolute top-6 left-1/2 transform -translate-x-1/2">
+                      <div className={`flex ${LADDER_STEPS[stepIndex + 1].length === 2 ? 'gap-16' : 
+                                             LADDER_STEPS[stepIndex + 1].length === 3 ? 'gap-8' : 'gap-4'}`}>
+                        {LADDER_STEPS[stepIndex + 1].map((_, branchIndex) => (
+                          <div 
+                            key={branchIndex}
+                            className="w-0.5 h-4 bg-gradient-to-b from-primary/30 to-transparent rounded-full animate-pulse"
+                            style={{ animationDelay: `${branchIndex * 0.15}s` }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>
         ))}
+        
+        {/* 배경 장식 원들 */}
+        <div className="absolute top-4 right-4 w-8 h-8 bg-primary/10 rounded-full animate-ping" />
+        <div className="absolute bottom-4 left-4 w-6 h-6 bg-secondary/10 rounded-full animate-ping" style={{ animationDelay: '1s' }} />
+        <div className="absolute top-1/2 right-8 w-4 h-4 bg-accent/10 rounded-full animate-ping" style={{ animationDelay: '2s' }} />
       </div>
     );
   };
@@ -180,7 +248,7 @@ const GameBoard = ({ onBackToMenu }: GameBoardProps) => {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-muted-foreground">
-              함께한 소중한 시간이었습니다. 서로의 마음을 나눠주셔서 감사해요! ❤️
+              사회정서 학습을 통해 함께 성장한 소중한 시간이었습니다! 🎓
             </p>
             <div className="space-y-2">
               <Button onClick={onBackToMenu} className="w-full">
@@ -203,7 +271,7 @@ const GameBoard = ({ onBackToMenu }: GameBoardProps) => {
             메인으로
           </Button>
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-foreground">마음일기</h1>
+            <h1 className="text-2xl font-bold text-foreground">한국형 사회정서 앱</h1>
             <p className="text-sm text-muted-foreground">게임 진행 중</p>
           </div>
           <div className="w-20" /> {/* 스페이서 */}

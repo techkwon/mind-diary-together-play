@@ -145,6 +145,22 @@ export default {
 					'50%': { transform: 'scale(1.05) translateY(0)', opacity: '1' },
 					'70%': { transform: 'scale(0.9)', opacity: '1' },
 					'100%': { transform: 'scale(1)', opacity: '1' }
+				},
+				// 사다리 게임 전용 애니메이션
+				'ladder-glow': {
+					'0%': { boxShadow: '0 0 5px rgba(var(--primary), 0.3)' },
+					'50%': { boxShadow: '0 0 20px rgba(var(--primary), 0.6), 0 0 30px rgba(var(--primary), 0.4)' },
+					'100%': { boxShadow: '0 0 5px rgba(var(--primary), 0.3)' }
+				},
+				'step-highlight': {
+					'0%': { backgroundColor: 'rgba(var(--primary), 0.1)' },
+					'50%': { backgroundColor: 'rgba(var(--primary), 0.3)' },
+					'100%': { backgroundColor: 'rgba(var(--primary), 0.1)' }
+				},
+				'connection-flow': {
+					'0%': { opacity: '0.3', transform: 'scaleY(0.5)' },
+					'50%': { opacity: '1', transform: 'scaleY(1.2)' },
+					'100%': { opacity: '0.3', transform: 'scaleY(0.5)' }
 				}
 			},
 			animation: {
@@ -154,7 +170,11 @@ export default {
 				'piece-move': 'piece-move 0.6s ease-in-out',
 				'heart-burst': 'heart-burst 0.8s ease-out',
 				'celebration': 'celebration 0.6s ease-in-out infinite',
-				'bounce-in': 'bounce-in 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55)'
+				'bounce-in': 'bounce-in 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+				// 사다리 게임 전용 애니메이션
+				'ladder-glow': 'ladder-glow 2s ease-in-out infinite',
+				'step-highlight': 'step-highlight 3s ease-in-out infinite',
+				'connection-flow': 'connection-flow 2s ease-in-out infinite'
 			}
 		}
 	},
