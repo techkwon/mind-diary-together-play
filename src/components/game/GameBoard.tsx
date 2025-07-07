@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Trophy, Heart, Star } from "lucide-react";
 import { useGame } from "@/contexts/GameContext";
+import { Player } from "@/contexts/GameContext";
 import Dice from "./Dice";
 import QuestionCard from "./QuestionCard";
 import { questions } from "@/data/questions";
@@ -101,7 +102,17 @@ const GameBoard = ({ onBackToMenu }: GameBoardProps) => {
     dispatch({ type: 'NEXT_TURN' });
   };
 
-  // 숫자 위치를 행/열로 변환 (지그재그 패턴)
+  const getPlayerEmoji = (color: Player['color']) => {
+    const colorMap = {
+      red: '🐻',
+      blue: '🐸', 
+      green: '🐱',
+      yellow: '🐰',
+      purple: '🦊',
+      orange: '🐶'
+    };
+    return colorMap[color] || '🐻';
+  };
   const getRowCol = (num: number) => {
     const row = Math.floor((num - 1) / 10);
     const col = row % 2 === 0 ? (num - 1) % 10 : 9 - ((num - 1) % 10);
@@ -174,15 +185,17 @@ const GameBoard = ({ onBackToMenu }: GameBoardProps) => {
                   </div>
                   
                   {/* 플레이어 말들 */}
-                  <div className="flex flex-wrap gap-0.5 justify-center">
+                  <div className="flex flex-wrap gap-1 justify-center">
                     {playersOnPosition.map((player, playerIndex) => (
                       <div
                         key={player.id}
-                        className={`w-2.5 h-2.5 rounded-full bg-player-${player.color} shadow-sm border border-white transform transition-all duration-300 ${
+                        className={`w-8 h-8 rounded-full bg-player-${player.color} shadow-lg border-2 border-white transform transition-all duration-300 flex items-center justify-center text-sm ${
                           state.isMoving && player.id === currentPlayer?.id ? 'animate-bounce scale-110' : ''
                         }`}
                         title={player.name}
-                      />
+                      >
+                        {getPlayerEmoji(player.color)}
+                      </div>
                     ))}
                   </div>
                   
