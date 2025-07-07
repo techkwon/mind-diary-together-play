@@ -21,6 +21,7 @@ export interface GameState {
   lastDiceRoll: number | null;
   currentQuestion: Question | null;
   isMoving: boolean;
+  previousPosition: number | null; // 실패시 돌아갈 위치
 }
 
 type GameAction = 
@@ -29,6 +30,9 @@ type GameAction =
   | { type: 'ROLL_DICE'; value: number }
   | { type: 'MOVE_PLAYER'; playerId: string; newPosition: number }
   | { type: 'SET_QUESTION'; question: Question }
+  | { type: 'SET_PREVIOUS_POSITION'; playerId: string; position: number }
+  | { type: 'MISSION_SUCCESS' }
+  | { type: 'MISSION_FAIL'; playerId: string }
   | { type: 'NEXT_TURN' }
   | { type: 'END_GAME'; winner: Player }
   | { type: 'SET_MOVING'; isMoving: boolean }
@@ -42,6 +46,7 @@ const initialState: GameState = {
   lastDiceRoll: null,
   currentQuestion: null,
   isMoving: false,
+  previousPosition: null,
 };
 
 function gameReducer(state: GameState, action: GameAction): GameState {
@@ -68,12 +73,35 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case 'SET_QUESTION':
       return { ...state, currentQuestion: action.question };
     
+    case 'SET_PREVIOUS_POSITION':
+      return { ...state, previousPosition: action.position };
+    
+    case 'MISSION_SUCCESS':
+      return {
+        ...state,
+        currentQuestion: null,
+        previousPosition: null,
+      };
+    
+    case 'MISSION_FAIL':
+      return {
+        ...state,
+        players: state.players.map(player =>
+          player.id === action.playerId && state.previousPosition !== null
+            ? { ...player, position: state.previousPosition }
+            : player
+        ),
+        currentQuestion: null,
+        previousPosition: null,
+      };
+    
     case 'NEXT_TURN':
       return {
         ...state,
         currentPlayerIndex: (state.currentPlayerIndex + 1) % state.players.length,
         lastDiceRoll: null,
         currentQuestion: null,
+        previousPosition: null,
       };
     
     case 'END_GAME':

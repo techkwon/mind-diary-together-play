@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Heart, Star, MessageCircle, ArrowRight } from "lucide-react";
+import { Heart, Star, MessageCircle, CheckCircle, XCircle } from "lucide-react";
 import { Question } from "@/contexts/GameContext";
+import { useGame } from "@/contexts/GameContext";
 
 interface QuestionCardProps {
   question: Question;
@@ -10,6 +11,21 @@ interface QuestionCardProps {
 }
 
 const QuestionCard = ({ question, onComplete, playerName }: QuestionCardProps) => {
+  const { dispatch, getCurrentPlayer } = useGame();
+  const currentPlayer = getCurrentPlayer();
+
+  const handleSuccess = () => {
+    dispatch({ type: 'MISSION_SUCCESS' });
+    onComplete();
+  };
+
+  const handleFail = () => {
+    if (currentPlayer) {
+      dispatch({ type: 'MISSION_FAIL', playerId: currentPlayer.id });
+    }
+    onComplete();
+  };
+
   const getIcon = () => {
     switch (question.category) {
       case 'heart':
@@ -35,11 +51,11 @@ const QuestionCard = ({ question, onComplete, playerName }: QuestionCardProps) =
   const getCategoryName = () => {
     switch (question.category) {
       case 'heart':
-        return '하트 카드';
+        return '하트 미션';
       case 'praise':
-        return '칭찬 카드';
+        return '칭찬 미션';
       default:
-        return '일반 카드';
+        return '일반 미션';
     }
   };
 
@@ -76,7 +92,7 @@ const QuestionCard = ({ question, onComplete, playerName }: QuestionCardProps) =
         </CardHeader>
         
         <CardContent className="space-y-6">
-          {/* 질문 카드 */}
+          {/* 미션 카드 */}
           <div className="bg-white/95 rounded-lg p-6 shadow-lg">
             <div className="text-center space-y-4">
               <div className="flex justify-center">
@@ -92,22 +108,36 @@ const QuestionCard = ({ question, onComplete, playerName }: QuestionCardProps) =
           {/* 안내 메시지 */}
           <div className="bg-white/90 rounded-lg p-4 text-center">
             <p className="text-foreground font-medium mb-2">
-              📢 질문을 큰 소리로 읽고 답변해주세요
+              📢 미션을 수행해주세요
             </p>
             <p className="text-sm text-muted-foreground">
-              답변을 마치셨으면 아래 버튼을 눌러 다음 차례로 넘어가세요
+              미션을 완료하셨으면 <strong>성공</strong>을, 완료하지 못했다면 <strong>실패</strong>를 선택해주세요
+            </p>
+            <p className="text-xs text-red-600 mt-2">
+              ⚠️ 실패시 이전 위치로 돌아갑니다
             </p>
           </div>
 
-          {/* 완료 버튼 */}
+          {/* 성공/실패 버튼 */}
           <div className="flex justify-center space-x-4">
             <Button
-              onClick={onComplete}
+              onClick={handleSuccess}
               size="lg"
-              className="px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+              variant="default"
+              className="px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 bg-green-600 hover:bg-green-700"
             >
-              답변 완료
-              <ArrowRight className="ml-2 w-5 h-5" />
+              <CheckCircle className="mr-2 w-6 h-6" />
+              미션 성공
+            </Button>
+            
+            <Button
+              onClick={handleFail}
+              size="lg"
+              variant="destructive"
+              className="px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+            >
+              <XCircle className="mr-2 w-6 h-6" />
+              미션 실패
             </Button>
           </div>
 

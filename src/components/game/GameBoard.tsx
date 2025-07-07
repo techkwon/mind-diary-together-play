@@ -11,7 +11,14 @@ interface GameBoardProps {
   onBackToMenu: () => void;
 }
 
-const BOARD_SIZE = 20; // 총 칸 수
+const BOARD_SIZE = 15; // 총 칸 수 (사다리 게임 형태)
+const LADDER_STEPS = [
+  [0, 1, 2, 3, 4],     // 1단계
+  [5, 6, 7],           // 2단계  
+  [8, 9, 10, 11],      // 3단계
+  [12, 13],            // 4단계
+  [14],                // 최종 단계 (골인)
+];
 
 const GameBoard = ({ onBackToMenu }: GameBoardProps) => {
   const { state, dispatch, getCurrentPlayer } = useGame();
@@ -23,6 +30,9 @@ const GameBoard = ({ onBackToMenu }: GameBoardProps) => {
     
     const diceValue = Math.floor(Math.random() * 6) + 1;
     dispatch({ type: 'ROLL_DICE', value: diceValue });
+    
+    // 이전 위치 저장 (미션 실패시 되돌아갈 위치)
+    dispatch({ type: 'SET_PREVIOUS_POSITION', playerId: currentPlayer.id, position: currentPlayer.position });
     
     // 플레이어 이동
     setTimeout(() => {
@@ -62,8 +72,8 @@ const GameBoard = ({ onBackToMenu }: GameBoardProps) => {
 
   const getSpecialPositions = () => {
     return {
-      praise: [3, 7, 11, 15], // 칭찬하기 칸
-      heart: [5, 9, 13, 17],  // 하트 칸
+      praise: [2, 6, 10], // 칭찬하기 칸
+      heart: [4, 8, 12],  // 하트 칸
     };
   };
 
@@ -90,46 +100,65 @@ const GameBoard = ({ onBackToMenu }: GameBoardProps) => {
   };
 
   const renderBoard = () => {
-    const positions = Array.from({ length: BOARD_SIZE }, (_, i) => i);
-    
     return (
-      <div className="grid grid-cols-5 gap-2 p-4 bg-muted/30 rounded-lg">
-        {positions.map((position) => {
-          const playersOnPosition = state.players.filter(p => p.position === position);
-          const positionType = getPositionType(position);
-          
-          return (
-            <div
-              key={position}
-              className={`
-                relative aspect-square rounded-lg border-2 p-2 flex flex-col items-center justify-center text-xs transition-all
-                ${positionType === 'praise' ? 'bg-gradient-praise border-praise' : ''}
-                ${positionType === 'heart' ? 'bg-gradient-heart border-heart' : ''}
-                ${positionType === 'finish' ? 'bg-gradient-warm border-primary' : ''}
-                ${positionType === 'normal' ? 'bg-card border-border' : ''}
-              `}
-            >
-              <div className="absolute top-1 left-1 text-xs font-mono text-muted-foreground">
-                {position + 1}
-              </div>
-              
-              {getPositionIcon(position)}
-              
-              {/* 플레이어 말들 */}
-              <div className="flex flex-wrap gap-1 mt-1">
-                {playersOnPosition.map((player) => (
-                  <div
-                    key={player.id}
-                    className={`w-3 h-3 rounded-full bg-player-${player.color} ${
-                      state.isMoving && player.id === currentPlayer?.id ? 'animate-piece-move' : ''
-                    }`}
-                    title={player.name}
-                  />
-                ))}
-              </div>
+      <div className="max-w-md mx-auto space-y-4 p-6 bg-muted/30 rounded-lg">
+        {LADDER_STEPS.map((step, stepIndex) => (
+          <div key={stepIndex} className="space-y-2">
+            {/* 단계 라벨 */}
+            <div className="text-center">
+              <span className="text-xs font-semibold text-muted-foreground bg-background px-2 py-1 rounded-full">
+                {stepIndex === LADDER_STEPS.length - 1 ? '🏆 골인' : `${stepIndex + 1}단계`}
+              </span>
             </div>
-          );
-        })}
+            
+            {/* 해당 단계의 칸들 */}
+            <div className={`flex justify-center gap-2 ${step.length === 1 ? 'justify-center' : ''}`}>
+              {step.map((position) => {
+                const playersOnPosition = state.players.filter(p => p.position === position);
+                const positionType = getPositionType(position);
+                
+                return (
+                  <div
+                    key={position}
+                    className={`
+                      relative w-16 h-16 rounded-lg border-2 p-2 flex flex-col items-center justify-center text-xs transition-all
+                      ${positionType === 'praise' ? 'bg-gradient-praise border-praise shadow-glow' : ''}
+                      ${positionType === 'heart' ? 'bg-gradient-heart border-heart shadow-glow' : ''}
+                      ${positionType === 'finish' ? 'bg-gradient-warm border-primary shadow-warm' : ''}
+                      ${positionType === 'normal' ? 'bg-card border-border hover:border-primary/50' : ''}
+                    `}
+                  >
+                    <div className="absolute top-1 left-1 text-xs font-mono text-muted-foreground">
+                      {position + 1}
+                    </div>
+                    
+                    {getPositionIcon(position)}
+                    
+                    {/* 플레이어 말들 */}
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {playersOnPosition.map((player) => (
+                        <div
+                          key={player.id}
+                          className={`w-3 h-3 rounded-full bg-player-${player.color} shadow-sm ${
+                            state.isMoving && player.id === currentPlayer?.id ? 'animate-piece-move' : ''
+                          }`}
+                          title={player.name}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            
+            {/* 연결선 (사다리 같은 효과) */}
+            {stepIndex < LADDER_STEPS.length - 1 && (
+              <div className="flex justify-center">
+                <div className="w-0.5 h-4 bg-muted-foreground/30" />
+              </div>
+            )}
+          </div>
+        ))}
       </div>
     );
   };
