@@ -61,7 +61,37 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Game-specific colors
+				player: {
+					red: 'hsl(var(--player-red))',
+					blue: 'hsl(var(--player-blue))',
+					green: 'hsl(var(--player-green))',
+					yellow: 'hsl(var(--player-yellow))'
+				},
+				heart: {
+					DEFAULT: 'hsl(var(--heart))',
+					light: 'hsl(var(--heart-light))'
+				},
+				praise: {
+					DEFAULT: 'hsl(var(--praise))',
+					light: 'hsl(var(--praise-light))'
 				}
+			},
+			backgroundImage: {
+				'gradient-warm': 'var(--gradient-warm)',
+				'gradient-heart': 'var(--gradient-heart)',
+				'gradient-praise': 'var(--gradient-praise)',
+				'gradient-background': 'var(--gradient-background)'
+			},
+			boxShadow: {
+				'warm': 'var(--shadow-warm)',
+				'card': 'var(--shadow-card)',
+				'glow': 'var(--shadow-glow)'
+			},
+			transitionTimingFunction: {
+				'smooth': 'cubic-bezier(0.4, 0, 0.2, 1)',
+				'bounce': 'cubic-bezier(0.68, -0.55, 0.265, 1.55)'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -84,11 +114,47 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				// Game animations
+				'dice-roll': {
+					'0%': { transform: 'rotate(0deg) scale(1)' },
+					'25%': { transform: 'rotate(90deg) scale(1.1)' },
+					'50%': { transform: 'rotate(180deg) scale(1.2)' },
+					'75%': { transform: 'rotate(270deg) scale(1.1)' },
+					'100%': { transform: 'rotate(360deg) scale(1)' }
+				},
+				'piece-move': {
+					'0%': { transform: 'scale(1)' },
+					'50%': { transform: 'scale(1.3) translateY(-10px)' },
+					'100%': { transform: 'scale(1)' }
+				},
+				'heart-burst': {
+					'0%': { transform: 'scale(0) rotate(0deg)', opacity: '0' },
+					'50%': { transform: 'scale(1.2) rotate(180deg)', opacity: '1' },
+					'100%': { transform: 'scale(1) rotate(360deg)', opacity: '1' }
+				},
+				'celebration': {
+					'0%': { transform: 'scale(1) rotate(0deg)' },
+					'25%': { transform: 'scale(1.1) rotate(-5deg)' },
+					'50%': { transform: 'scale(1.2) rotate(5deg)' },
+					'75%': { transform: 'scale(1.1) rotate(-5deg)' },
+					'100%': { transform: 'scale(1) rotate(0deg)' }
+				},
+				'bounce-in': {
+					'0%': { transform: 'scale(0.3) translateY(-100px)', opacity: '0' },
+					'50%': { transform: 'scale(1.05) translateY(0)', opacity: '1' },
+					'70%': { transform: 'scale(0.9)', opacity: '1' },
+					'100%': { transform: 'scale(1)', opacity: '1' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'dice-roll': 'dice-roll 1s ease-in-out',
+				'piece-move': 'piece-move 0.6s ease-in-out',
+				'heart-burst': 'heart-burst 0.8s ease-out',
+				'celebration': 'celebration 0.6s ease-in-out infinite',
+				'bounce-in': 'bounce-in 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55)'
 			}
 		}
 	},
